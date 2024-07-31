@@ -30,12 +30,56 @@
 #  - call asus to switch to a US or UK keyboard
 #  - sleep to hibernate
 #  - touchpad gestures
+#    -- three finger drag
+#    -- two finger text selection
+#    -- two finger swipe to go back
 #  - steam
 #  - rog-control-center
+#  - manage outer light strip
+#  - manage back 3 lights
+#  - after waking from suspend, the lock screen isn't focused on the password text input box and there's no keyboard navigation to it
+#  - after waking from suspend, gnome power mode goes back to Balanced, even if it was at Power Saver before sleeping
+#  - colors are too vibrant / saturated:
+#    -- https://www.reddit.com/r/Fedora/comments/1ddhhpi/oversaturated_colors/
+#    -- https://webkit.org/blog-files/color-gamut/
+#    -- https://github.com/libvibrant/vibrantLinux
+#  - set battery charge limit to 80% or 90%
+#  - check that asus-nb-wmi works:
+#    -- https://discordapp.com/channels/725125934759411753/1241113282941685793/1242368699378438204
+#    -- lsmod | grep asus
+#    -- dmesg | grep asus
+#    -- dmesg should not show this: asus-nb-wmi: probe with driver asus-nb-wmi failed with error -17 
+#  - check what Nobara provides and apply here
 
-{ config, pkgs, ... }:
+{ config, pkgs, pkgs-unstable, ... }:
 
+let
+  channel-23-11 = import (builtins.fetchTarball "channel:nixos-23.11") { system = builtins.currentSystem; };
+  pkgs-23-11 = channel-23-11.pkgs;
+  #channel-unstable = import (builtins.fetchTarball "channel:nixos-unstable") { system = builtins.currentSystem; };
+  #pkgs-unstable = channel-unstable.pkgs;
+  #pkgs-unstable = import <nixos-unstable> { config.allowUnfree = true; };
+  overlay-asus = final: prev: {
+    # https://github.com/NixOS/nixpkgs/issues/316538#issuecomment-2143736105
+    asusctl = pkgs-unstable.asusctl;
+    supergfxctl = pkgs-unstable.supergfxctl;
+  };
+  
+  
+in
 {
+  # Allow unfree packages
+  nixpkgs.config.allowUnfree = true;
+
+  # NixOS service definitions reference packages from nixpkgs.
+  # Sometimes they let you override packages, but not always.
+  # To use a different version of a package and make sure that
+  # services pick up that version, add it to nixpkgs overlays.
+  #
+  # https://www.reddit.com/r/NixOS/comments/1cgiywn/comment/l1yf3d6/
+  # https://discordapp.com/channels/725125934759411753/770379483353055264/1226274730353496108
+  nixpkgs.overlays = [ overlay-asus ];
+
   imports = [
       ./asus/zephyrus/ga403/default.nix
       # Include the results of the hardware scan.
@@ -45,14 +89,50 @@
   # Bootloader.
   boot.loader.systemd-boot.enable = true;
   boot.loader.efi.canTouchEfiVariables = true;
-  boot.kernelPackages = pkgs.linuxPackages_latest;
+  boot.kernelPackages = pkgs-unstable.linuxPackages_latest;
+  # https://github.com/NixOS/nixpkgs/blob/9f918d616c5321ad374ae6cb5ea89c9e04bf3e58/pkgs/top-level/linux-kernels.nix#L219
+  # We need Linux 6.11 for asus g14 2024 GA403UI support
+  # TODO: read about the zen and xanmod kernels
+  #boot.kernelPackages = pkgs-unstable.linuxPackages_testing;
+  # https://www.reddit.com/r/NixOS/comments/18d3ftz/comment/kcewc4b/
+  #boot.kernelPackages = pkgs.linuxPackages_cachyos-rc;
+
+  #boot.kernelPackages =
+  #  let
+  #    linux-pkg = { fetchgit, fetchurl, buildLinux, ... }@args:
+
+  #      buildLinux (args // rec {
+  #        version = "6.11.0-rc1";
+  #        modDirVersion = version;
+  #        src = fetchurl {
+  #          url = "https://git.kernel.org/torvalds/t/linux-6.11-rc1.tar.gz";
+  #          sha256 = "sha256-LwEX2frGRkc0LeYAABNv/o4E/rH0kkNfhSRR3ly8dkk=";
+  #        };
+  #        #kernelPatches = [ ];
+  #        #extraConfig = ''
+  #        #  INTEL_SGX y
+  #        #'';
+  #      } // (args.argsOverride or { }));
+  #    linux = pkgs.callPackage linux-pkg { };
+  #  in pkgs.recurseIntoAttrs (pkgs.linuxPackagesFor linux);
+    
+
   boot.kernelParams = [
     "mem_sleep_default=deep"
     "pcie_aspm.policy=powersupersave"
     # https://wiki.archlinux.org/title/NVIDIA#DRM_kernel_mode_setting
     # If this is set, does the nvidia dGPU turn on for the console in the boot sequence?
     # "nvidia_drm.fbdev=1"
+
+    # Uncomment this if the display flickers:
+    # https://github.com/sjhaleprogrammer/nixos/blob/c4f0e7488abd60a280fffd9511809c3261b643c8/configuration.nix#L92
+    # https://bbs.archlinux.org/viewtopic.php?id=279300
+    # https://dri.freedesktop.org/docs/drm/gpu/amdgpu.html
+    "amdgpu.dcdebugmask=0x10"
   ];
+
+  # might be already provided by services.hardware.openrgb.enable=true
+  #boot.kernelModules = [ "i2c-dev" "i2c-piix4" ];
 
   # https://github.com/NixOS/nixpkgs/issues/276374#issuecomment-2000252942
   boot.initrd.systemd.enable = true;
@@ -70,6 +150,7 @@
   #hardware.graphics.enable = true;
   # 24.05 
   hardware.opengl.enable = true;
+  hardware.opengl.driSupport32Bit = true;
 
   hardware.nvidia = {
 
@@ -122,6 +203,8 @@
     persistencedSha256 = pkgs.lib.fakeSha256;
   };
 
+  services.hardware.openrgb.enable = true;
+
   # https://www.reddit.com/r/NixOS/comments/1cx9wsy/comment/lanvj9y
   # hardware.nvidia.package = config.boot.kernelPackages.nvidiaPackages.mkDriver {
   #   version = "555.58";
@@ -134,9 +217,12 @@
 
   services.udev = {
     extraRules = ''
+      ${builtins.readFile "${pkgs.openrgb}/lib/udev/rules.d/60-openrgb.rules"}
+
       # Disable auto-suspend for the ASUS N-KEY Device, i.e. USB Keyboard
       # Otherwise, it will tend to take 1-2 key-presses to wake-up after suspending
-      ACTION=="add", SUBSYSTEM=="usb", TEST=="power/autosuspend", ATTR{idVendor}=="0b05", ATTR{idProduct}=="19b6", ATTR{power/autosuspend}="-1"
+      #ACTION=="add", SUBSYSTEM=="usb", TEST=="power/autosuspend", ATTR{idVendor}=="0b05", ATTR{idProduct}=="19b6", ATTR{power/autosuspend}="-1"
+
     '';
   };
 
@@ -159,7 +245,8 @@
   networking.networkmanager.enable = true;
 
   # Set your time zone.
-  time.timeZone = "America/New_York";
+  #time.timeZone = "America/New_York";
+  time.timeZone = "Europe/London";
   services.automatic-timezoned.enable = true;
 
 
@@ -227,6 +314,10 @@
   };
 
 
+  nix.settings.experimental-features = [ "nix-command" "flakes" ];
+  #nix.gc.automatic = true;
+  nix.settings.auto-optimise-store = true;
+
   # Define a user account. Don't forget to set a password with ‘passwd’.
   users.users.daniel = {
     isNormalUser = true;
@@ -240,32 +331,41 @@
   # Install firefox.
   programs.firefox.enable = true;
 
-  # Allow unfree packages
-  nixpkgs.config.allowUnfree = true;
-
   # List packages installed in system profile. To search, run:
   # $ nix search wget
   environment.systemPackages = with pkgs; [
-    vim # Do not forget to add an editor to edit configuration.nix! The Nano editor is also installed by default.
-    wget
+    #chromium
     curl
-    chromium
-    google-chrome
+    git
+    #google-chrome
+    i2c-tools
     lshw
+    openrgb-with-all-plugins
     pciutils
-    steam
+    pmutils
+    powertop
+    radeontop
+    ryzenadj
+    #steam
+    vim # Do not forget to add an editor to edit configuration.nix! The Nano editor is also installed by default.
     vulkan-tools
     vulkan-loader
     vulkan-headers
-    radeontop
-    powertop
-    ryzenadj
-    pmutils
+    wget
     # what about turbostat and cpupower?
     # https://github.com/Quoteme/nixos/blob/fbdf92b6eacb7ce212218eb70b12d350786f41d7/hardware/asusROGFlowX13.nix#L126-L127
   ];
 
-  programs.rog-control-center.enable = true;
+  #programs.rog-control-center.enable = true;
+
+  programs.steam = {
+    enable = true;
+    #remotePlay.openFirewall = true; # Open ports in the firewall for Steam Remote Play
+    #dedicatedServer.openFirewall = true; # Open ports in the firewall for Source Dedicated Server
+    #localNetworkGameTransfers.openFirewall = true; # Open ports in the firewall for Steam Local Network Game Transfers
+  };
+
+  hardware.i2c.enable = true;
 
   # Adds the missing asus functionality to Linux.
   # https://asus-linux.org/manual/asusctl-manual/
@@ -275,7 +375,7 @@
     # fanCurvesConfig = builtins.readFile ../config/fan_curves.ron;
 
     # https://github.com/NixOS/nixpkgs/issues/316538#issuecomment-2143736105
-    package = pkgs.asusctl;
+    #package = pkgs-23-11.asusctl;
   };
   services.supergfxd.enable = true;
   # AMD has better battery life with PPD over TLP:
