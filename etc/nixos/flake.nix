@@ -4,7 +4,8 @@
     #chaotic.url = "github:chaotic-cx/nyx/nyxpkgs-unstable";
     #chaotic.inputs.nixpkgs.follows = "nixpkgs";
     nixos-hardware.url = "github:NixOS/nixos-hardware/master";
-    nixpkgs.url = "github:NixOS/nixpkgs/nixos-24.05";
+    # nixpkgs.url = "github:NixOS/nixpkgs/nixos-24.05";
+    nixpkgs.url = "github:NixOS/nixpkgs/nixos-unstable";
     nixpkgs-unstable.url = "github:NixOS/nixpkgs/nixos-unstable";
   };
   outputs = { self, nixos-hardware, nixpkgs, nixpkgs-unstable }@inputs: {

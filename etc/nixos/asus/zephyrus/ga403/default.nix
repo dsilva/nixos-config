@@ -3,7 +3,10 @@
 {
   imports = [
     nixos-hardware.nixosModules.common-cpu-amd
+    # https://wiki.archlinux.org/title/CPU_frequency_scaling#amd_pstate
+    # https://docs.kernel.org/admin-guide/pm/amd-pstate.html
     nixos-hardware.nixosModules.common-cpu-amd-pstate
+    nixos-hardware.nixosModules.common-gpu-amd
     nixos-hardware.nixosModules.common-gpu-nvidia
     nixos-hardware.nixosModules.common-pc-laptop
     nixos-hardware.nixosModules.common-pc-laptop-acpi_call

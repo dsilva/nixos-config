@@ -31,6 +31,9 @@
 #  -- https://github.com/Quoteme/nixos/blob/fbdf92b6eacb7ce212218eb70b12d350786f41d7/hardware/asusROGFlowX13.nix#L94
 #  - call asus to switch to a US or UK keyboard
 #  - sleep to hibernate
+#    -- https://www.worldofbs.com/nixos-framework/#setting-up-hibernate
+#    -- https://www.cyberciti.biz/faq/linux-command-to-suspend-hibernate-laptop-netbook-pc/
+#    -- https://wiki.archlinux.org/title/Power_management/Suspend_and_hibernate#Hibernation
 #  - touchpad gestures
 #    -- three finger drag
 #    -- two finger text selection
@@ -53,6 +56,14 @@
 #    -- dmesg | grep asus
 #    -- dmesg should not show this: asus-nb-wmi: probe with driver asus-nb-wmi failed with error -17 
 #  - check what Nobara provides and apply here
+#  - automatic time zone
+#    -- https://www.reddit.com/r/NixOS/comments/1411gjs/dynamically_set_the_timezone/
+#  - amd pstate epp set wrong
+#    -- https://docs.kernel.org/admin-guide/pm/amd-pstate.html#processor-support
+#    -- /sys/devices/system/cpu/cpu0/cpufreq/energy_performance_preference not matching cpupower frequency-info
+#    -- https://www.reddit.com/r/archlinux/comments/17qo6lz/powerprofilesdaemon_on_gnome_does_anything/
+#  - remove redundant clock from tmux status bar
+
 
 { config, inputs, pkgs, pkgs-unstable, ... }:
 
@@ -209,11 +220,27 @@ in
   # 24.11 
   #hardware.graphics.enable = true;
   # 24.05 
-  hardware.opengl = {
+  hardware.graphics = {
     enable = true;
-    extraPackages = with pkgs; [ amdvlk rocm-opencl-icd ];
-    driSupport = true;
-    driSupport32Bit = true;
+    # https://discourse.nixos.org/t/what-exactly-does-hardware-opengl-extrapackages-influence/36384
+    extraPackages = with pkgs; [
+      amdvlk
+      rocm-opencl-icd
+      # Is vdpau only for nvidia?
+      # https://www.reddit.com/r/archlinux/comments/1d5rsni/comment/l71is7q/
+      #vaapiVdpau
+      #libvdpau-va-gl
+    ];
+    # driSupport = true;
+    enable32Bit = true;
+    # NixOS 24.05 includes Mesa 24.0.7, but I need Mesa 24.1.
+    # NixOS 24.05 packages like GDM were compiled against Mesa 24.0.7 and do not work
+    # with a different Mesa version, so I can't just set hardware.opengl.package=unstable.mesa.drivers.
+    # Adding an overlay where mesa=unstable.mesa would work, but it recompiles half of the world.
+    # To avoid all of this, upgrade all of NixOS to unstable.
+    # https://www.reddit.com/r/NixOS/comments/g52agx/is_it_possible_to_use_mesa_from_nixosunstable_on/
+    # package = pkgs-unstable.mesa.drivers;
+    # package32 = pkgs-unstable.pkgsi686Linux.mesa.drivers;
   };
 
   hardware.nvidia = {
@@ -311,7 +338,7 @@ in
 
   # Set your time zone.
   time.timeZone = "Europe/London";
-#  services.automatic-timezoned.enable = true;
+  #  services.automatic-timezoned.enable = true;
 
 
   # Select internationalisation properties.
@@ -339,11 +366,35 @@ in
     };
 
     # Enable the GNOME Desktop Environment.
-    displayManager.gdm.enable = true;
-    desktopManager.gnome.enable = true;
+    displayManager.gdm = {
+      enable = true;
+      wayland = true;
+    };
+    desktopManager.gnome = {
+      enable = true;
+      # Variable refresh rate (VRR)
+      # TODO: there's still a manual step.  Figure out how to encode that here:
+      #   "VRR can then be enabled for each supported monitor in the Display Settings under Refresh Rate"
+      # https://wiki.archlinux.org/title/Variable_refresh_rate#Wayland_configuration
+      # https://www.reddit.com/r/NixOS/comments/1ckpcji/comment/l2swmqz/
+      # https://www.phoronix.com/news/GNOME-XWayland-Frac-Scaling
+      # https://github.com/GNOME/mutter/blob/e3891781804dfda1896f9e286bc0f1a55ef39d63/data/org.gnome.mutter.gschema.xml.in#L117-L137
+      extraGSettingsOverridePackages = [ pkgs.gnome.mutter ];
+      extraGSettingsOverrides = ''
+        [org.gnome.mutter]
+        experimental-features=['variable-refresh-rate', 'scale-monitor-framebuffer']
+      '';
+    };
 
-    videoDrivers = [ "nvidia" "modeset" ];
+    # videoDrivers = [ "amdgpu" "nvidia" "modeset" ];
   };
+
+  services.desktopManager.plasma6 = {
+    enable = true;
+  };
+
+  # programs.ssh.askPassword = "${pkgs.gnome.seahorse}/libexec/seahorse/ssh-askpass";
+  programs.ssh.askPassword = "${pkgs.ksshaskpass}/bin/ksshaskpass";
 
   # Enable touchpad support (enabled default in most desktopManager).
   services.libinput = {
@@ -403,20 +454,28 @@ in
   # List packages installed in system profile. To search, run:
   # $ nix search wget
   environment.systemPackages = with pkgs; [
+    # https://wiki.archlinux.org/title/AMDGPU#Monitoring
+    amdgpu_top
     #chromium
     config.boot.kernelPackages.cpupower
     curl
     git
-    #google-chrome
     i2c-tools
+    # https://github.com/NixOS/nixpkgs/issues/221535#issuecomment-1488836940
+    libva-utils
+    # https://www.baeldung.com/linux/power-consumption#1-using-lmsensors
+    lm_sensors
     lshw
+    # https://wiki.archlinux.org/title/AMDGPU#Monitoring
+    nvtopPackages.amd
     # openrgb-with-all-plugins
     pciutils
     pmutils
+    # https://www.baeldung.com/linux/power-consumption#3-using-powerstat
+    powerstat
     powertop
     radeontop
     ryzenadj
-    #steam
     vim # Do not forget to add an editor to edit configuration.nix! The Nano editor is also installed by default.
     vulkan-tools
     vulkan-loader

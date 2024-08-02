@@ -14,14 +14,22 @@ buildEnv {
     discord
     element-desktop
     gitFull
-    gnome.gnome-terminal
+    gnome-terminal
     htop
     nil
     nix # If not on NixOS, this is important!
     nixd
     nixpkgs-fmt
     firefox
-    google-chrome
+    # https://discourse.nixos.org/t/chromium-with-wayland-switches/15635
+    (google-chrome.override {
+      commandLineArgs = [
+        # https://wiki.archlinux.org/title/Chromium#Native_Wayland_support
+        "--ozone-platform-hint=auto"
+        "--enable-wayland-ime"
+        "--enable-features=TouchpadOverscrollHistoryNavigation"
+      ];
+    })
     icewm
     lutris
     # Without a keyring package, vscode will sync extensions with “weaker encryption”
