@@ -6,6 +6,7 @@
 #  - face unlock with Howdy
 #  -- https://github.com/LEXUGE/nixos/commits/988190b195a719022dc83daa980d4f98ceed751a/plugins/devices/howdy/packages/howdy.nix
 #  - speakers have less bass than on windows
+#    -- https://github.com/sammilucia/asus-jamesdsp
 #  - tune speakers (compare with macbook)
 #  - gets hot while idle
 #  - nvidia drivers
@@ -21,6 +22,7 @@
 #  - alternate keyboard mapping matching UK macbook
 #  - touchpad pointer acceleration to match macbook/macos
 #  - setup s3 sleep mode instead of modern sleep
+#    -- https://saveriomiroddi.github.io/Enabling-the-S3-sleep-suspend-on-the-Lenovo-Yoga-7-AMD-Gen-7-and-possibly-others/
 #  - UI to manage the GPU MUX switch
 #  - check that the boot console uses the AMD iGPU, not the nvidia dGPU
 #  - supergfxd?
@@ -41,6 +43,7 @@
 #  - after waking from suspend, gnome power mode goes back to Balanced, even if it was at Power Saver before sleeping
 #  - colors are too vibrant / saturated:
 #    -- https://www.reddit.com/r/Fedora/comments/1ddhhpi/oversaturated_colors/
+#    -- https://forum.garudalinux.org/t/colors-are-washed-out-since-last-updates/36817/9
 #    -- https://webkit.org/blog-files/color-gamut/
 #    -- https://github.com/libvibrant/vibrantLinux
 #  - set battery charge limit to 80% or 90%
@@ -51,7 +54,7 @@
 #    -- dmesg should not show this: asus-nb-wmi: probe with driver asus-nb-wmi failed with error -17 
 #  - check what Nobara provides and apply here
 
-{ config, pkgs, pkgs-unstable, ... }:
+{ config, inputs, pkgs, pkgs-unstable, ... }:
 
 let
   channel-23-11 = import (builtins.fetchTarball "channel:nixos-23.11") { system = builtins.currentSystem; };
@@ -64,8 +67,38 @@ let
     asusctl = pkgs-unstable.asusctl;
     supergfxctl = pkgs-unstable.supergfxctl;
   };
-  
-  
+
+  # flukejones's kernel with asus patches that are still making their way to linuux 6.11
+  # https://discord.com/channels/725125934759411753/747539974555172934/1262873770041802963 
+  # https://lore.kernel.org/platform-driver-x86/20240716051612.64842-1-luke@ljones.dev/T/#t
+  linux-flukejones =
+    let
+      linux-pkg = { fetchgit, fetchFromGitLab, fetchurl, buildLinux, ... }@args:
+        buildLinux (args // rec {
+          version = "6.10.0-rc7";
+          modDirVersion = version;
+          src = fetchFromGitLab {
+            owner = "flukejones";
+            repo = "linux";
+            # Find the latest commit at:
+            # https://gitlab.com/flukejones/linux/-/commits/asus-next-stable/?ref_type=HEADS
+            rev = "fe7bfa99bba334521dad63e1d71ef5f0bcc65a72";
+            sha256 = "sha256-nwZ9zMWE7P9FM1ZOONF9t8Zbh3xgPqdosmtXtO7s6H4=";
+          };
+          kernelPatches = [
+            pkgs.kernelPatches.bridge_stp_helper
+            pkgs.kernelPatches.request_key_helper
+          ];
+          #kernelPatches = [ ];
+          #extraConfig = ''
+          #  INTEL_SGX y
+          #'';
+        } // (args.argsOverride or { }));
+      linux = pkgs.callPackage linux-pkg { };
+    in
+    pkgs.recurseIntoAttrs (pkgs.linuxPackagesFor linux);
+
+
 in
 {
   # Allow unfree packages
@@ -81,17 +114,20 @@ in
   nixpkgs.overlays = [ overlay-asus ];
 
   imports = [
-      ./asus/zephyrus/ga403/default.nix
-      # Include the results of the hardware scan.
-      ./hardware-configuration.nix
-    ];
+    ./asus/zephyrus/ga403/default.nix
+    # Include the results of the hardware scan.
+    ./hardware-configuration.nix
+  ];
 
   # Bootloader.
   boot.loader.systemd-boot.enable = true;
+  boot.loader.systemd-boot.configurationLimit = 15;
   boot.loader.efi.canTouchEfiVariables = true;
   boot.kernelPackages = pkgs-unstable.linuxPackages_latest;
   # https://github.com/NixOS/nixpkgs/blob/9f918d616c5321ad374ae6cb5ea89c9e04bf3e58/pkgs/top-level/linux-kernels.nix#L219
-  # We need Linux 6.11 for asus g14 2024 GA403UI support
+  # We need Linux 6.11 for asus g14 2024 GA403UI support:
+  #   https://gitlab.com/asus-linux/asusctl/-/issues/484
+  #   https://discord.com/channels/725125934759411753/1265261799637389424/1265273875638517841 
   # TODO: read about the zen and xanmod kernels
   #boot.kernelPackages = pkgs-unstable.linuxPackages_testing;
   # https://www.reddit.com/r/NixOS/comments/18d3ftz/comment/kcewc4b/
@@ -100,7 +136,6 @@ in
   #boot.kernelPackages =
   #  let
   #    linux-pkg = { fetchgit, fetchurl, buildLinux, ... }@args:
-
   #      buildLinux (args // rec {
   #        version = "6.11.0-rc1";
   #        modDirVersion = version;
@@ -115,21 +150,45 @@ in
   #      } // (args.argsOverride or { }));
   #    linux = pkgs.callPackage linux-pkg { };
   #  in pkgs.recurseIntoAttrs (pkgs.linuxPackagesFor linux);
-    
 
   boot.kernelParams = [
-    "mem_sleep_default=deep"
-    "pcie_aspm.policy=powersupersave"
-    # https://wiki.archlinux.org/title/NVIDIA#DRM_kernel_mode_setting
-    # If this is set, does the nvidia dGPU turn on for the console in the boot sequence?
-    # "nvidia_drm.fbdev=1"
+    # AMD Adaptive Backlight Management
+    # Potentially reduces power usage.  Comment out if it's annoying.
+    # https://community.frame.work/t/adaptive-backlight-management-abm/41055
+    # https://gitlab.freedesktop.org/upower/power-profiles-daemon#panel-power-savings
+    # "amdgpu.abmlevel=3"
 
     # Uncomment this if the display flickers:
     # https://github.com/sjhaleprogrammer/nixos/blob/c4f0e7488abd60a280fffd9511809c3261b643c8/configuration.nix#L92
     # https://bbs.archlinux.org/viewtopic.php?id=279300
     # https://dri.freedesktop.org/docs/drm/gpu/amdgpu.html
-    "amdgpu.dcdebugmask=0x10"
+    # "amdgpu.dcdebugmask=0x10"
+
+    # Uncomment this if the display flickers white when changing resolutio or connecting an external monitor:
+    # https://wiki.archlinux.org/title/AMDGPU#Screen_flickering_white_when_using_KDE
+    # "amdgpu.sg_display=0"
+
+    "boot.shell_on_fail"
+    "mem_sleep_default=deep"
+    "quiet"
+    "pcie_aspm.policy=powersupersave"
+    "splash"
+
+    # https://wiki.archlinux.org/title/NVIDIA#DRM_kernel_mode_setting
+    # If this is set, does the nvidia dGPU turn on for the console in the boot sequence?
+    # "nvidia_drm.fbdev=1"
   ];
+  #boot.consoleLogLevel = 0;
+  boot.plymouth = {
+    enable = true;
+    theme = "fade-in";
+    themePackages = with pkgs; [
+      # By default we would install all themes
+      (adi1090x-plymouth-themes.override {
+        selected_themes = [ "abstract_ring" ];
+      })
+    ];
+  };
 
   # might be already provided by services.hardware.openrgb.enable=true
   #boot.kernelModules = [ "i2c-dev" "i2c-piix4" ];
@@ -144,13 +203,18 @@ in
     powertop = {
       enable = true;
     };
+    cpuFreqGovernor = "powersave";
   };
- 
+
   # 24.11 
   #hardware.graphics.enable = true;
   # 24.05 
-  hardware.opengl.enable = true;
-  hardware.opengl.driSupport32Bit = true;
+  hardware.opengl = {
+    enable = true;
+    extraPackages = with pkgs; [ amdvlk rocm-opencl-icd ];
+    driSupport = true;
+    driSupport32Bit = true;
+  };
 
   hardware.nvidia = {
 
@@ -177,15 +241,15 @@ in
     open = true;
 
     # Enable the Nvidia settings menu,
-	# accessible via `nvidia-settings`.
+    # accessible via `nvidia-settings`.
     nvidiaSettings = true;
 
     # Optionally, you may need to select the appropriate driver version for your specific GPU.
     #package = config.boot.kernelPackages.nvidiaPackages.stable;
 
     prime = {
-#      amdgpuBusId = "PCI:101:0:0";
-#      nvidiaBusId = "PCI:1:0:0";
+      #      amdgpuBusId = "PCI:101:0:0";
+      #      nvidiaBusId = "PCI:1:0:0";
       offload = {
         enable = true;
         enableOffloadCmd = true;
@@ -203,7 +267,7 @@ in
     persistencedSha256 = pkgs.lib.fakeSha256;
   };
 
-  services.hardware.openrgb.enable = true;
+  #services.hardware.openrgb.enable = true;
 
   # https://www.reddit.com/r/NixOS/comments/1cx9wsy/comment/lanvj9y
   # hardware.nvidia.package = config.boot.kernelPackages.nvidiaPackages.mkDriver {
@@ -216,8 +280,9 @@ in
   # };
 
   services.udev = {
-    extraRules = ''
-      ${builtins.readFile "${pkgs.openrgb}/lib/udev/rules.d/60-openrgb.rules"}
+    extraRules =
+      #  (builtins.readFile "${pkgs.openrgb}/lib/udev/rules.d/60-openrgb.rules") +
+      ''
 
       # Disable auto-suspend for the ASUS N-KEY Device, i.e. USB Keyboard
       # Otherwise, it will tend to take 1-2 key-presses to wake-up after suspending
@@ -230,7 +295,7 @@ in
     {
       device = "/var/lib/swapfile";
       # in megabytes
-      size = 36*1024;
+      size = 36 * 1024;
     }
   ];
 
@@ -245,9 +310,8 @@ in
   networking.networkmanager.enable = true;
 
   # Set your time zone.
-  #time.timeZone = "America/New_York";
   time.timeZone = "Europe/London";
-  services.automatic-timezoned.enable = true;
+#  services.automatic-timezoned.enable = true;
 
 
   # Select internationalisation properties.
@@ -273,12 +337,12 @@ in
       layout = "jp";
       variant = "";
     };
-    
+
     # Enable the GNOME Desktop Environment.
     displayManager.gdm.enable = true;
     desktopManager.gnome.enable = true;
 
-    videoDrivers = ["nvidia" "modeset"];
+    videoDrivers = [ "nvidia" "modeset" ];
   };
 
   # Enable touchpad support (enabled default in most desktopManager).
@@ -318,13 +382,18 @@ in
   #nix.gc.automatic = true;
   nix.settings.auto-optimise-store = true;
 
+  # These two already seem to be the default as of NixOS 24.05:
+  # nix.registry.nixpkgs.flake = inputs.nixpkgs;
+  # nix.nixPath = [ "nixpkgs=flake:nixpkgs" "/nix/var/nix/profiles/per-user/root/channels" ];
+
+
   # Define a user account. Don't forget to set a password with ‘passwd’.
   users.users.daniel = {
     isNormalUser = true;
     description = "Daniel";
     extraGroups = [ "networkmanager" "wheel" ];
     packages = with pkgs; [
-    #  thunderbird
+      #  thunderbird
     ];
   };
 
@@ -335,12 +404,13 @@ in
   # $ nix search wget
   environment.systemPackages = with pkgs; [
     #chromium
+    config.boot.kernelPackages.cpupower
     curl
     git
     #google-chrome
     i2c-tools
     lshw
-    openrgb-with-all-plugins
+    # openrgb-with-all-plugins
     pciutils
     pmutils
     powertop
@@ -369,6 +439,7 @@ in
 
   # Adds the missing asus functionality to Linux.
   # https://asus-linux.org/manual/asusctl-manual/
+  # Issues: https://gitlab.com/asus-linux/asusctl/-/issues
   services.asusd = {
     enable = true;
     enableUserService = true;
@@ -383,11 +454,14 @@ in
   services.power-profiles-daemon.enable = true;
   services.acpid.enable = true;
 
+
   # protectKernelImage blocks hibernate.  Don't do that.
   # https://discourse.nixos.org/t/hibernate-doesnt-work-anymore/24673/5
   # https://discourse.nixos.org/t/solved-nohibernate-option-added-to-kernelparams-and-i-dont-know-where-it-comes-from/20611/5
   # https://github.com/NixOS/nixpkgs/commit/84fb8820db6226a6e5333813d47da6d876243064 
   security.protectKernelImage = false;
+
+  services.upower.criticalPowerAction = "Hibernate";
 
   system.autoUpgrade.enable = true;
   system.autoUpgrade.channel = "https://nixos.org/channels/nixos-24.05/";
@@ -417,6 +491,7 @@ in
   # this value at the release version of the first install of this system.
   # Before changing this value read the documentation for this option
   # (e.g. man configuration.nix or on https://nixos.org/nixos/options.html).
+  # https://nixos.wiki/wiki/FAQ/When_do_I_update_stateVersion
   system.stateVersion = "24.05"; # Did you read the comment?
 
 }

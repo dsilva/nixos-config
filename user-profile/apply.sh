@@ -3,5 +3,5 @@ set -e
 
 here=$(dirname "$0")
 cd "$here"
-nix-env -f . --set
+nix profile upgrade 0
 

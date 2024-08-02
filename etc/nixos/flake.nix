@@ -7,16 +7,16 @@
     nixpkgs.url = "github:NixOS/nixpkgs/nixos-24.05";
     nixpkgs-unstable.url = "github:NixOS/nixpkgs/nixos-unstable";
   };
-  outputs = { self, nixos-hardware, nixpkgs, nixpkgs-unstable }: {
+  outputs = { self, nixos-hardware, nixpkgs, nixpkgs-unstable }@inputs: {
     # "nixos" is the hostname 
     nixosConfigurations.nixos = nixpkgs.lib.nixosSystem {
       system = "x86_64-linux";
       specialArgs = {
+        inherit inputs nixos-hardware;
         pkgs-unstable = import nixpkgs-unstable {
           system = "x86_64-linux";
           config.allowUnfree = true;
         };
-        nixos-hardware = nixos-hardware;
       };
       modules = [
         ./configuration.nix
