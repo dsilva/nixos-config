@@ -63,7 +63,10 @@
 #    -- /sys/devices/system/cpu/cpu0/cpufreq/energy_performance_preference not matching cpupower frequency-info
 #    -- https://www.reddit.com/r/archlinux/comments/17qo6lz/powerprofilesdaemon_on_gnome_does_anything/
 #  - remove redundant clock from tmux status bar
-
+#  - CPPC support for amd_pstate pending asus bios fix:
+#    -- https://bugzilla.kernel.org/show_bug.cgi?id=218686
+#    -- https://discord.com/channels/725125934759411753/1265111375903195249/1267789226188079156
+#    -- https://web.archive.org/web/20240224060623/https://www.reddit.com/r/linux/comments/15p4bfs/amd_pstate_and_amd_pstate_epp_scaling_driver/
 
 { config, inputs, pkgs, pkgs-unstable, ... }:
 
