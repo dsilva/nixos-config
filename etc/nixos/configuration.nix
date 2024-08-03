@@ -68,9 +68,6 @@
 { config, inputs, pkgs, pkgs-unstable, ... }:
 
 let
-  #channel-unstable = import (builtins.fetchTarball "channel:nixos-unstable") { system = builtins.currentSystem; };
-  #pkgs-unstable = channel-unstable.pkgs;
-  #pkgs-unstable = import <nixos-unstable> { config.allowUnfree = true; };
   overlay-asus = final: prev: {
     # https://github.com/NixOS/nixpkgs/issues/316538#issuecomment-2143736105
     asusctl = pkgs-unstable.asusctl;
