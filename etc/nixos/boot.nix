@@ -57,7 +57,7 @@ in
 
   # Bootloader.
   boot.loader.efi.canTouchEfiVariables = true;
-  boot.loader.systemd-boot.configurationLimit = 15;
+  boot.loader.systemd-boot.configurationLimit = 8;
   boot.loader.systemd-boot.enable = true;
 
   # https://github.com/NixOS/nixpkgs/pull/282022
@@ -68,7 +68,7 @@ in
   # might be already provided by services.hardware.openrgb.enable=true
   # boot.kernelModules = [ "i2c-dev" "i2c-piix4" ];
 
-  boot.kernelPackages = pkgs-unstable.linuxPackages_latest;
+  # boot.kernelPackages = pkgs-unstable.linuxPackages_latest;
 
   # https://github.com/NixOS/nixpkgs/blob/9f918d616c5321ad374ae6cb5ea89c9e04bf3e58/pkgs/top-level/linux-kernels.nix#L219
   # We need Linux 6.11 for asus g14 2024 GA403UI support:
@@ -78,6 +78,8 @@ in
   #boot.kernelPackages = pkgs-unstable.linuxPackages_testing;
   # https://www.reddit.com/r/NixOS/comments/18d3ftz/comment/kcewc4b/
   #boot.kernelPackages = pkgs.linuxPackages_cachyos-rc;
+
+  boot.kernelPackages = linux-flukejones;
 
   boot.kernelParams = [
     # AMD Adaptive Backlight Management
