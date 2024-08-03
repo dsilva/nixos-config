@@ -224,12 +224,18 @@ in
     enable = true;
     # https://discourse.nixos.org/t/what-exactly-does-hardware-opengl-extrapackages-influence/36384
     extraPackages = with pkgs; [
-      amdvlk
+      # amdvlk does not work with Wayland yet as of 2024-08-02:
+      # https://github.com/GPUOpen-Drivers/AMDVLK/issues/351#issuecomment-2198425641
+      # https://bbs.archlinux.org/viewtopic.php?id=294816
+      # https://www.reddit.com/r/kde/comments/18l3owr/comment/ke22onn/
+      # https://aur.archlinux.org/packages/zed-preview#comment-977807
+      #amdvlk
+
       rocm-opencl-icd
       # Is vdpau only for nvidia?
       # https://www.reddit.com/r/archlinux/comments/1d5rsni/comment/l71is7q/
-      #vaapiVdpau
-      #libvdpau-va-gl
+      vaapiVdpau
+      libvdpau-va-gl
     ];
     # driSupport = true;
     enable32Bit = true;
@@ -450,6 +456,10 @@ in
 
   # Install firefox.
   programs.firefox.enable = true;
+
+  # https://nixos.wiki/wiki/Chromium#Enabling_native_Wayland_support
+  # https://nixos.wiki/wiki/Wayland#Electron_and_Chromium
+  environment.sessionVariables.NIXOS_OZONE_WL = "1";
 
   # List packages installed in system profile. To search, run:
   # $ nix search wget

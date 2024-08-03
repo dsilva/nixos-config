@@ -20,16 +20,10 @@ buildEnv {
     nix # If not on NixOS, this is important!
     nixd
     nixpkgs-fmt
+    # TODO: check that vp9 hardware decoding works with firefox
+    #       https://www.reddit.com/r/firefox/comments/1ccot5c/hw_acceleration_of_vp9_decoding_on_linux_not/
     firefox
-    # https://discourse.nixos.org/t/chromium-with-wayland-switches/15635
-    (google-chrome.override {
-      commandLineArgs = [
-        # https://wiki.archlinux.org/title/Chromium#Native_Wayland_support
-        "--ozone-platform-hint=auto"
-        "--enable-wayland-ime"
-        "--enable-features=TouchpadOverscrollHistoryNavigation"
-      ];
-    })
+    (callPackage ./google-chrome-with-video-acceleration.nix { })
     icewm
     lutris
     # Without a keyring package, vscode will sync extensions with “weaker encryption”
