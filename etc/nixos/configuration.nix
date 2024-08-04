@@ -38,6 +38,7 @@
 #    -- three finger drag
 #    -- two finger text selection
 #    -- two finger swipe to go back
+#    -- two finger pinch to zoom
 #  - steam
 #  - rog-control-center
 #  - manage outer light strip
@@ -141,4 +142,5 @@ in
 
   time.timeZone = "Europe/London";
 
+  # virtualisation.waydroid.enable = true;
 }

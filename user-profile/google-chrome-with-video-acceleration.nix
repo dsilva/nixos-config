@@ -5,6 +5,7 @@
 #       https://www.phoronix.com/news/Google-Chrome-Wayland-VA-API
 #       https://discussion.fedoraproject.org/t/how-to-get-gpu-acceleration-working-in-chromium-browsers-for-amd-apus/75571/7
 #       https://www.reddit.com/r/Fedora/comments/1cbnsbd/i_finally_managed_to_have_hardware_accelerated/
+#       https://bbs.archlinux.org/viewtopic.php?pid=2177812#p2177812
 #       https://www.reddit.com/r/linuxquestions/comments/1e7x1sq/comment/le37xz2/
 #       https://wiki.archlinux.org/title/Chromium#Hardware_video_acceleration
 

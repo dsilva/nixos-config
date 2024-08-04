@@ -1,5 +1,9 @@
 { config, inputs, pkgs, pkgs-unstable, ... }:
 
+# let
+#   nextdns-id = builtins.readFile "/etc/nixos/nextdns-id";
+# in
+
 {
   services.acpid.enable = true;
 
@@ -53,6 +57,19 @@
 
   # Enable CUPS to print documents.
   services.printing.enable = true;
+
+  # NextDNS
+  # services.resolved = {
+  #   enable = true;
+  #   extraConfig = ''
+  #     [Resolve]
+  #     DNS=45.90.28.0#${nextdns-id}.dns.nextdns.io
+  #     DNS=2a07:a8c0::#${nextdns-id}.dns.nextdns.io
+  #     DNS=45.90.30.0#${nextdns-id}.dns.nextdns.io
+  #     DNS=2a07:a8c1::#${nextdns-id}.dns.nextdns.io
+  #     DNSOverTLS=yes
+  #   '';
+  # };
 
   services.supergfxd.enable = true;
 
