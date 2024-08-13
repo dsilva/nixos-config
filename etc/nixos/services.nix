@@ -49,6 +49,18 @@
     # use the example session manager (no others are packaged yet so this is enabled by default,
     # no need to redefine it in your config for now)
     #media-session.enable = true;
+
+    # https://www.reddit.com/r/linux/comments/1em8biv/psa_pipewire_has_been_halving_your_battery_life/
+    # https://search.nixos.org/options?channel=unstable&show=services.pipewire.wireplumber.configPackages&from=0&size=50&sort=relevance&type=packages&query=wireplumber
+    wireplumber.configPackages = [
+      (pkgs.writeTextDir "share/wireplumber/wireplumber.conf.d/10-disable-camera.conf" ''
+        wireplumber.profiles = {
+          main = {
+            monitor.libcamera = disabled
+          }
+        }
+      '')
+    ];
   };
 
   # AMD has better battery life with PPD over TLP:
