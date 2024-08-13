@@ -10,6 +10,7 @@ buildEnv {
   extraOutputsToInstall = [ "out" "bin" "lib" ];
   paths = [
     alacritty
+    cpupower-gui
     curl
     discord
     element-desktop
@@ -37,11 +38,13 @@ buildEnv {
     tmux
     (vscode.fhsWithPackages (ps: with ps; [ rustup zlib openssl.dev pkg-config ]))
     vim
+    wezterm
     whatsapp-for-linux
     wineWowPackages.stable
     # Required for vscode links and synching
     # https://discourse.nixos.org/t/vscode-not-opening-github-sign-in-to-activate-syncing/40715
     xdg-utils
+    zoom-us
 
     # TODO: package Line windows version like this:
     # https://github.com/emmanuelrosa/erosanix/blob/HEAD/pkgs/foobar2000.nix
