@@ -98,6 +98,9 @@ in
     # https://wiki.archlinux.org/title/AMDGPU#Screen_flickering_white_when_using_KDE
     # "amdgpu.sg_display=0"
 
+    # https://wiki.archlinux.org/title/CPU_frequency_scaling#Scaling_drivers
+    # "amd_pstate=passive"
+
     "boot.shell_on_fail"
     "mem_sleep_default=deep"
     "quiet"

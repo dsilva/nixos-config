@@ -5,7 +5,10 @@
     nixos-hardware.nixosModules.common-cpu-amd
     # https://wiki.archlinux.org/title/CPU_frequency_scaling#amd_pstate
     # https://docs.kernel.org/admin-guide/pm/amd-pstate.html
-    nixos-hardware.nixosModules.common-cpu-amd-pstate
+    # CPPC and thus pstate + EPP support is broken on asus ga403ui and ga403uv bios v306:
+    # https://bugzilla.kernel.org/show_bug.cgi?id=218686
+    # https://discord.com/channels/725125934759411753/1265111375903195249
+    # nixos-hardware.nixosModules.common-cpu-amd-pstate
     nixos-hardware.nixosModules.common-gpu-amd
     nixos-hardware.nixosModules.common-gpu-nvidia
     nixos-hardware.nixosModules.common-pc-laptop
