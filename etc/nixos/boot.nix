@@ -8,15 +8,15 @@ let
     let
       linux-pkg = { fetchgit, fetchFromGitLab, fetchurl, buildLinux, ... }@args:
         buildLinux (args // rec {
-          version = "6.10.0-rc7";
+          version = "6.10.0";
           modDirVersion = version;
           src = fetchFromGitLab {
             owner = "flukejones";
             repo = "linux";
             # Find the latest commit at:
             # https://gitlab.com/flukejones/linux/-/commits/asus-next-stable/?ref_type=HEADS
-            rev = "fe7bfa99bba334521dad63e1d71ef5f0bcc65a72";
-            sha256 = "sha256-nwZ9zMWE7P9FM1ZOONF9t8Zbh3xgPqdosmtXtO7s6H4=";
+            rev = "1f647f457e57bc8c828409cc97debf3fab9280fb";
+            sha256 = "sha256-ZeUy06OA5DFIP1qw3624rKt72/mmOtMdRrdBN1GlDDo=";
           };
           kernelPatches = [
             pkgs.kernelPatches.bridge_stp_helper
