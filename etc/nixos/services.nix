@@ -25,6 +25,11 @@
     enable = true;
   };
 
+  services.howdy = {
+    enable = true;
+    package = inputs.nixpkgs-howdy.legacyPackages.x86_64-linux.howdy;
+  };
+
   # Enable touchpad support (enabled default in most desktopManager).
   services.libinput = {
     enable = true;
@@ -34,8 +39,14 @@
     };
   };
 
-  # Enable the OpenSSH daemon.
-  # services.openssh.enable = true;
+  services.openssh = {
+    enable = false;
+    settings = {
+      KbdInteractiveAuthentication = false;
+      PasswordAuthentication = false;
+      PermitRootLogin = "no";
+    };
+  };
 
   # Enable sound with pipewire.
   services.pipewire = {
