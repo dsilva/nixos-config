@@ -10,6 +10,7 @@ buildEnv {
   extraOutputsToInstall = [ "out" "bin" "lib" ];
   paths = [
     alacritty
+    comma
     cpupower-gui
     curl
     discord
@@ -34,11 +35,13 @@ buildEnv {
     protonup-qt
     redshift
     screen
+    starship
     steam
     tmux
     (vscode.fhsWithPackages (ps: with ps; [ rustup zlib openssl.dev pkg-config ]))
     vim
-    wezterm
+    # Somehow this builds from source when nixpkgs points to nixpkgs-unstable
+    # wezterm
     whatsapp-for-linux
     wineWowPackages.stable
     # Required for vscode links and synching
