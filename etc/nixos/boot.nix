@@ -23,6 +23,9 @@ let
             pkgs.kernelPatches.request_key_helper
           ];
           #kernelPatches = [ ];
+          # The CS35L56 Cirrus Amp in the 2024 Zephyrus G14 (GA403U) requires
+          # CONFIG_SERIAL_MULTI_INSTANTIATE to be enabled in order for it to fire up and load its firmware
+          # https://forums.gentoo.org/viewtopic-p-8826740.html?sid=642d536a66748c0bb0aced2ec01dade4#8826740
           #extraConfig = ''
           #  INTEL_SGX y
           #'';
@@ -57,7 +60,7 @@ in
 
   # Bootloader.
   boot.loader.efi.canTouchEfiVariables = true;
-  boot.loader.systemd-boot.configurationLimit = 8;
+  boot.loader.systemd-boot.configurationLimit = 6;
   boot.loader.systemd-boot.enable = true;
 
   # https://github.com/NixOS/nixpkgs/pull/282022
