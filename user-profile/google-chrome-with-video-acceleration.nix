@@ -21,7 +21,7 @@ let
   # As of 2024-08-02, by default Vulkan wakes up the nvidia gGPU:
   # https://forums.developer.nvidia.com/t/550-67-nvidia-vulkan-icd-wakes-up-dgpu-on-initialization-and-exit/288095/6
   # Either disable it, or force Vulkan to only see the AMD driver.
-  use-vulkan = true;
+  use-vulkan = false;
 
   vulkan-environment = {
     # Select the Vulkan driver:
@@ -61,34 +61,56 @@ let
     "DefaultANGLEVulkan"
   ];
 
-  enable-features = [
+  gl-features = if use-vulkan then vulkan-features else [ ];
+
+  enable-features = gl-features ++ [
     "TouchpadOverscrollHistoryNavigation"
     "VaapiVideoDecoder"
     "VaapiVideoEncoder"
-  ] ++ (if use-vulkan then vulkan-features else [ ]);
+  ];
 
-  disable-features = [
+  vulkan-disable-features = [ ];
+  gl-disable-features = if use-vulkan then vulkan-disable-features else no-vulkan-disable-features;
+
+  disable-features = gl-disable-features ++ [
     # "UseChromeOSDirectVideoDecoder"
-  ] ++ (if use-vulkan then [ ] else no-vulkan-disable-features);
+
+    # Uncomment this if fonts are blurry in Wayland with fractional scaling
+    # https://www.reddit.com/r/archlinux/comments/13gtogn/comment/jstqvlt/
+    # "WaylandFractionalScaleV1"
+  ];
 
   # gl=angle,angle=vulkan does not work in wayland yet:
   # https://issues.chromium.org/issues/334275637
-  use-wayland = false;
+  # But also in gnome, fonts are blurry with xwayland.
+  use-wayland = true;
 
-  commandLineArgs =
-    [
-      # https://wiki.archlinux.org/title/Chromium#Native_Wayland_support
-      # https://discourse.nixos.org/t/chromium-with-wayland-switches/15635
-      (if use-wayland then "--ozone-platform-hint=auto" else "--ozone-platform=x11")
+  # https://wiki.archlinux.org/title/Chromium#Native_Wayland_support
+  # https://discourse.nixos.org/t/chromium-with-wayland-switches/15635
+  wayland-args = [
+    "--ozone-platform-hint=auto"
+    "--enable-wayland-ime"
+  ];
 
-      # "--enable-wayland-ime"
-      #"--use-gl=egl"
-      "--use-gl=angle"
-      "--use-angle=vulkan"
-      "--enable-accelerated-video-decode"
-      "--disable-features=${lib.concatStringsSep "," disable-features}"
-      "--enable-features=${lib.concatStringsSep "," enable-features}"
-    ];
+  x11-args = [
+    "--ozone-platform=x11"
+  ];
+
+  display-client-args = if use-wayland then wayland-args else x11-args;
+
+  vulkan-args = [
+    "--use-gl=angle"
+    "--use-angle=vulkan"
+  ];
+
+  #"--use-gl=egl"
+  gl-args = if use-vulkan then vulkan-args else [ ];
+
+  commandLineArgs = display-client-args ++ gl-args ++ [
+    "--enable-accelerated-video-decode"
+    "--disable-features=${lib.concatStringsSep "," disable-features}"
+    "--enable-features=${lib.concatStringsSep "," enable-features}"
+  ];
 
   overrides = { inherit commandLineArgs; };
 
@@ -111,7 +133,7 @@ let
       wrapProgram $out/bin/google-chrome-stable \
       ${lib.concatStringsSep " " set-environment-args} \
         --prefix LD_LIBRARY_PATH : ${vulkan-loader.out}/lib/
-      '';
+    '';
   };
 
 in
