@@ -5,7 +5,14 @@
   users.users.daniel = {
     isNormalUser = true;
     description = "Daniel";
-    extraGroups = [ "networkmanager" "wheel" ];
+    extraGroups = [
+      # https://github.com/NixOS/nixpkgs/issues/317013
+      config.programs.ydotool.group
+      # needed for fusuma
+      "input"
+      "networkmanager"
+      "wheel"
+    ];
     packages = with pkgs; [
       #  thunderbird
     ];

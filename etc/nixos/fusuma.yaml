@@ -1,0 +1,18 @@
+# Three finger drag
+# https://github.com/iberianpig/fusuma/wiki/3-fingers-Drag-(OS-X-Style)
+# https://github.com/iberianpig/fusuma/issues/173#issuecomment-2058984377
+swipe:
+  3:
+    begin:
+      # 0x40 is left mouse down
+      # https://github.com/ReimuNotMoe/ydotool/blob/master/manpage/ydotool.1.scd#mouse-commands
+      command: /run/current-system/sw/bin/ydotool click 0x40
+      interval: 0.00
+    update:
+      command: /run/current-system/sw/bin/ydotool mousemove -- $move_x, $move_y
+      interval: 0.01
+      accel: 1.70
+    end:
+      # 0x80 is left mouse up
+      # https://github.com/ReimuNotMoe/ydotool/blob/master/manpage/ydotool.1.scd#mouse-commands
+      command: /run/current-system/sw/bin/ydotool click 0x80

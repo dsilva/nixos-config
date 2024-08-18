@@ -14,4 +14,9 @@
     #dedicatedServer.openFirewall = true; # Open ports in the firewall for Source Dedicated Server
     #localNetworkGameTransfers.openFirewall = true; # Open ports in the firewall for Steam Local Network Game Transfers
   };
+
+  # https://discourse.nixos.org/t/anyone-got-ydotool-working-in-kde-plasma/19252
+  # https://github.com/iberianpig/fusuma/issues/173#issuecomment-2058984377
+  # https://mynixos.com/nixpkgs/option/programs.ydotool.enable
+  programs.ydotool.enable = true;
 }

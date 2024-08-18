@@ -13,8 +13,10 @@
     #chromium
     config.boot.kernelPackages.cpupower
     curl
+    fusuma
     git
     i2c-tools
+    libinput
     # https://github.com/NixOS/nixpkgs/issues/221535#issuecomment-1488836940
     libva-utils
     # https://www.baeldung.com/linux/power-consumption#1-using-lmsensors
@@ -35,6 +37,8 @@
     vulkan-loader
     vulkan-headers
     wget
+    # https://github.com/iberianpig/fusuma/issues/173#issuecomment-2058984377
+    ydotool
     # what about turbostat and cpupower?
     # https://github.com/Quoteme/nixos/blob/fbdf92b6eacb7ce212218eb70b12d350786f41d7/hardware/asusROGFlowX13.nix#L126-L127
   ];
