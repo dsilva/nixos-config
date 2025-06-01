@@ -1,24 +1,40 @@
 { config, inputs, pkgs, pkgs-unstable, ... }:
 
 {
+  hardware.amdgpu.opencl.enable = true;
+  # https://nixos.wiki/wiki/AMD_GPU#AMDVLK
+  # amdvlk does not work with Wayland yet as of 2024-08-02:
+  # https://github.com/GPUOpen-Drivers/AMDVLK/issues/351#issuecomment-2198425641
+  # https://bbs.archlinux.org/viewtopic.php?id=294816
+  # https://www.reddit.com/r/kde/comments/18l3owr/comment/ke22onn/
+  # https://aur.archlinux.org/packages/zed-preview#comment-977807
+  #hardware.amdgpu.amdvlk.enable = true;
+
   hardware.i2c.enable = true;
 
   hardware.graphics = {
     enable = true;
     # https://discourse.nixos.org/t/what-exactly-does-hardware-opengl-extrapackages-influence/36384
     extraPackages = with pkgs; [
-      # amdvlk does not work with Wayland yet as of 2024-08-02:
-      # https://github.com/GPUOpen-Drivers/AMDVLK/issues/351#issuecomment-2198425641
-      # https://bbs.archlinux.org/viewtopic.php?id=294816
-      # https://www.reddit.com/r/kde/comments/18l3owr/comment/ke22onn/
-      # https://aur.archlinux.org/packages/zed-preview#comment-977807
+      # https://nixos.wiki/wiki/AMD_GPU#AMDVLK
+      # configure this with hardware.amdgpu.amdvlk.enable
       #amdvlk
 
-      rocm-opencl-icd
+      # rocm-opencl-icd
+
+      # https://nixos.wiki/wiki/AMD_GPU#OpenCL
+      # Configure this with hardware.amdgpu.opencl.enable
+      # https://mynixos.com/nixpkgs/option/hardware.amdgpu.opencl.enable
+      #rocmPackages.clr.icd
+
       # Is vdpau only for nvidia?
       # https://www.reddit.com/r/archlinux/comments/1d5rsni/comment/l71is7q/
       vaapiVdpau
       libvdpau-va-gl
+    ];
+    extraPackages32 = with pkgs; [
+      # See comments about amdvlk in extraPackages above.
+      # driversi686Linux.amdvlk
     ];
     # driSupport = true;
     enable32Bit = true;
@@ -61,7 +77,9 @@
     nvidiaSettings = true;
 
     # Optionally, you may need to select the appropriate driver version for your specific GPU.
-    #package = config.boot.kernelPackages.nvidiaPackages.stable;
+    # package = config.boot.kernelPackages.nvidiaPackages.stable;
+    # https://www.reddit.com/r/NixOS/comments/1ai04sz/comment/kovbxc9/
+    # package = config.boot.kernelPackages.nvidiaPackages.beta;
 
     prime = {
       #      amdgpuBusId = "PCI:101:0:0";
@@ -72,15 +90,14 @@
       };
     };
 
-    package = config.boot.kernelPackages.nvidiaPackages.mkDriver {
-      version = "555.58";
-      sha256_64bit = "sha256-bXvcXkg2kQZuCNKRZM5QoTaTjF4l2TtrsKUvyicj5ew=";
-      sha256_aarch64 = pkgs.lib.fakeSha256;
-      # openSha256 = pkgs.lib.fakeSha256;
-      openSha256 = "sha256-hEAmFISMuXm8tbsrB+WiUcEFuSGRNZ37aKWvf0WJ2/c=";
-      settingsSha256 = "sha256-vWnrXlBCb3K5uVkDFmJDVq51wrCoqgPF03lSjZOuU8M=";
-      persistencedSha256 = pkgs.lib.fakeSha256;
-    };
+    # package = config.boot.kernelPackages.nvidiaPackages.mkDriver {
+    #   version = "555.58";
+    #   sha256_64bit = "sha256-bXvcXkg2kQZuCNKRZM5QoTaTjF4l2TtrsKUvyicj5ew=";
+    #   sha256_aarch64 = pkgs.lib.fakeSha256;
+    #   openSha256 = "sha256-hEAmFISMuXm8tbsrB+WiUcEFuSGRNZ37aKWvf0WJ2/c=";
+    #   settingsSha256 = "sha256-vWnrXlBCb3K5uVkDFmJDVq51wrCoqgPF03lSjZOuU8M=";
+    #   persistencedSha256 = pkgs.lib.fakeSha256;
+    # };
 
     # https://www.reddit.com/r/NixOS/comments/1cx9wsy/comment/lanvj9y
     # package = config.boot.kernelPackages.nvidiaPackages.mkDriver {
@@ -95,6 +112,4 @@
 
   #services.hardware.openrgb.enable = true;
 
-  # Enable sound with pipewire.
-  hardware.pulseaudio.enable = false;
 }

@@ -6,7 +6,7 @@
   #programs.rog-control-center.enable = true;
 
   # programs.ssh.askPassword = "${pkgs.gnome.seahorse}/libexec/seahorse/ssh-askpass";
-  programs.ssh.askPassword = "${pkgs.ksshaskpass}/bin/ksshaskpass";
+  programs.ssh.askPassword = "${pkgs.kdePackages.ksshaskpass}/bin/ksshaskpass";
 
   programs.steam = {
     enable = true;

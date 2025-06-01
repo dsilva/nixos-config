@@ -25,6 +25,7 @@ buildEnv {
     # TODO: check that vp9 hardware decoding works with firefox
     #       https://www.reddit.com/r/firefox/comments/1ccot5c/hw_acceleration_of_vp9_decoding_on_linux_not/
     firefox
+    gerbera
     (callPackage ./google-chrome-with-video-acceleration.nix { })
     icewm
     lutris
@@ -37,6 +38,7 @@ buildEnv {
     screen
     starship
     steam
+    stremio
     tmux
     (vscode.fhsWithPackages (ps: with ps; [ rustup zlib openssl.dev pkg-config ]))
     vim

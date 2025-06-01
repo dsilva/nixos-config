@@ -21,14 +21,50 @@
 
   # services.automatic-timezoned.enable = true;
 
+  services.desktopManager.cosmic.enable = true;
+  
+  services.desktopManager.gnome = {
+      enable = true;
+      # Variable refresh rate (VRR)
+      # TODO: there's still a manual step.  Figure out how to encode that here:
+      #   "VRR can then be enabled for each supported monitor in the Display Settings under Refresh Rate"
+      # https://wiki.archlinux.org/title/Variable_refresh_rate#Wayland_configuration
+      # https://www.reddit.com/r/NixOS/comments/1ckpcji/comment/l2swmqz/
+      # https://www.phoronix.com/news/GNOME-XWayland-Frac-Scaling
+      # https://github.com/GNOME/mutter/blob/e3891781804dfda1896f9e286bc0f1a55ef39d63/data/org.gnome.mutter.gschema.xml.in#L117-L137
+      extraGSettingsOverridePackages = [ pkgs.mutter ];
+      extraGSettingsOverrides = ''
+        [org.gnome.mutter]
+        experimental-features=['variable-refresh-rate', 'scale-monitor-framebuffer']
+      '';
+    };
+
   services.desktopManager.plasma6 = {
     enable = true;
   };
 
-  services.howdy = {
-    enable = true;
-    package = inputs.nixpkgs-howdy.legacyPackages.x86_64-linux.howdy;
+# services.displayManager.cosmic-greeter.enable = true;
+    # Enable the GNOME Desktop Environment.
+  services.displayManager.defaultSession = "gnome";
+
+  services.displayManager.gdm = {
+      enable = true;
+      wayland = true;
+    };
+
+  services.flatpak.enable = true;
+  systemd.services.flatpak-repo = {
+    wantedBy = [ "multi-user.target" ];
+    path = [ pkgs.flatpak ];
+    script = ''
+      flatpak remote-add --if-not-exists flathub https://flathub.org/repo/flathub.flatpakrepo
+    '';
   };
+  
+  # services.howdy = {
+  #   enable = true;
+  #   package = inputs.nixpkgs-howdy.legacyPackages.x86_64-linux.howdy;
+  # };
 
   # Enable touchpad support (enabled default in most desktopManager).
   services.libinput = {
@@ -74,12 +110,20 @@
     ];
   };
 
+# services.plex = {
+#   enable = true;
+#   openFirewall = true;
+# };
+
   # AMD has better battery life with PPD over TLP:
   # https://community.frame.work/t/responded-amd-7040-sleep-states/38101/13
   services.power-profiles-daemon.enable = true;
 
   # Enable CUPS to print documents.
   services.printing.enable = true;
+
+  # Enable sound with pipewire.
+  services.pulseaudio.enable = false;
 
   # NextDNS
   # services.resolved = {
@@ -119,26 +163,6 @@
       variant = "";
     };
 
-    # Enable the GNOME Desktop Environment.
-    displayManager.gdm = {
-      enable = true;
-      wayland = true;
-    };
-    desktopManager.gnome = {
-      enable = true;
-      # Variable refresh rate (VRR)
-      # TODO: there's still a manual step.  Figure out how to encode that here:
-      #   "VRR can then be enabled for each supported monitor in the Display Settings under Refresh Rate"
-      # https://wiki.archlinux.org/title/Variable_refresh_rate#Wayland_configuration
-      # https://www.reddit.com/r/NixOS/comments/1ckpcji/comment/l2swmqz/
-      # https://www.phoronix.com/news/GNOME-XWayland-Frac-Scaling
-      # https://github.com/GNOME/mutter/blob/e3891781804dfda1896f9e286bc0f1a55ef39d63/data/org.gnome.mutter.gschema.xml.in#L117-L137
-      extraGSettingsOverridePackages = [ pkgs.gnome.mutter ];
-      extraGSettingsOverrides = ''
-        [org.gnome.mutter]
-        experimental-features=['variable-refresh-rate', 'scale-monitor-framebuffer']
-      '';
-    };
 
     # videoDrivers = [ "amdgpu" "nvidia" "modeset" ];
   };

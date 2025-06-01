@@ -3,6 +3,12 @@
 {
   system.autoUpgrade.enable = true;
   system.autoUpgrade.channel = "https://nixos.org/channels/nixos-24.05/";
+  # https://github.com/NixOS/nixpkgs/issues/245522
+  system.autoUpgrade.flags = [
+    "--update-input"
+    "nixpkgs"
+    "--commit-lock-file"
+  ];
 
   # This value determines the NixOS release from which the default
   # settings for stateful data, like file locations and database versions

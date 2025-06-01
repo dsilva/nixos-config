@@ -6,17 +6,40 @@ let
   # https://lore.kernel.org/platform-driver-x86/20240716051612.64842-1-luke@ljones.dev/T/#t
   linux-flukejones =
     let
-      linux-pkg = { fetchgit, fetchFromGitLab, fetchurl, buildLinux, ... }@args:
+      fluke-linux-versions = {
+        # Find the latest commit at one of the branches listed below:
+
+        # https://github.com/flukejones/linux/commits/asus-next-stable/
+        "6.12.1-2024-11-22" = {
+          rev = "3c43651ca05d57e6e7da74fa691bd9419081d17f";
+          sha256 = "sha256-Qon7LJD3LFQwQh6BTtVVWf9/Yb0ueu+sNK8dl0gJrl4=";
+          version = "6.12.1";
+        };
+        # https://github.com/flukejones/linux/commits/wip/ally-6.14/
+        "6.14.0-rc7-2025-03-16" = {
+          rev = "4f166a6bf9cb7d2b6118cf508c393a4d5d087158";
+          sha256 = "sha256-L+1aerYyF1x2BaFuKIRy9/XTA1rf+cwuPJ/+CbQ9N/U=";
+          version = "6.14.0-rc7";
+        };
+      };
+      fluke-linux-version = fluke-linux-versions."6.14.0-rc7-2025-03-16";
+      linux-pkg = { fetchgit, fetchFromGitLab, fetchFromGitHub, fetchurl, buildLinux, ... }@args:
         buildLinux (args // rec {
-          version = "6.10.0";
+          version = fluke-linux-version.version;
           modDirVersion = version;
-          src = fetchFromGitLab {
+          # src = fetchFromGitLab {
+          #   owner = "flukejones";
+          #   repo = "linux";
+          #   # Find the latest commit at:
+          #   # https://gitlab.com/flukejones/linux/-/commits/asus-next-stable/?ref_type=HEADS
+          #   rev = "5ef1e51e585133cfa1f4cd57ba33071fee574ae4";
+          #   sha256 = "sha256-z0JesQOl5l8+UxQQlyPCfUfS99Aqf3raQBeTMF7ESrw=";
+          # };
+          src = fetchFromGitHub {
             owner = "flukejones";
             repo = "linux";
-            # Find the latest commit at:
-            # https://gitlab.com/flukejones/linux/-/commits/asus-next-stable/?ref_type=HEADS
-            rev = "1f647f457e57bc8c828409cc97debf3fab9280fb";
-            sha256 = "sha256-ZeUy06OA5DFIP1qw3624rKt72/mmOtMdRrdBN1GlDDo=";
+            rev = fluke-linux-version.rev;
+            sha256 = fluke-linux-version.sha256;
           };
           kernelPatches = [
             pkgs.kernelPatches.bridge_stp_helper
@@ -60,7 +83,7 @@ in
 
   # Bootloader.
   boot.loader.efi.canTouchEfiVariables = true;
-  boot.loader.systemd-boot.configurationLimit = 6;
+  boot.loader.systemd-boot.configurationLimit = 3;
   boot.loader.systemd-boot.enable = true;
 
   # https://github.com/NixOS/nixpkgs/pull/282022
@@ -71,18 +94,21 @@ in
   # might be already provided by services.hardware.openrgb.enable=true
   # boot.kernelModules = [ "i2c-dev" "i2c-piix4" ];
 
-  # boot.kernelPackages = pkgs-unstable.linuxPackages_latest;
+  # If the nvidia driver fails to build, use the default LTS kernel
+  # https://discourse.nixos.org/t/cannot-build-nvidia-x11-570-153-02-6-15/64898/5
+  boot.kernelPackages = pkgs-unstable.linuxPackages_latest;
+  # boot.kernelPackages = pkgs.linuxPackages_latest;
 
   # https://github.com/NixOS/nixpkgs/blob/9f918d616c5321ad374ae6cb5ea89c9e04bf3e58/pkgs/top-level/linux-kernels.nix#L219
   # We need Linux 6.11 for asus g14 2024 GA403UI support:
   #   https://gitlab.com/asus-linux/asusctl/-/issues/484
   #   https://discord.com/channels/725125934759411753/1265261799637389424/1265273875638517841 
   # TODO: read about the zen and xanmod kernels
-  #boot.kernelPackages = pkgs-unstable.linuxPackages_testing;
+  # boot.kernelPackages = pkgs-unstable.linuxPackages_testing;
   # https://www.reddit.com/r/NixOS/comments/18d3ftz/comment/kcewc4b/
   #boot.kernelPackages = pkgs.linuxPackages_cachyos-rc;
 
-  boot.kernelPackages = linux-flukejones;
+  # boot.kernelPackages = linux-flukejones;
 
   boot.kernelParams = [
     # AMD Adaptive Backlight Management

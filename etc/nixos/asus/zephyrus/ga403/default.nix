@@ -8,11 +8,18 @@
     # CPPC and thus pstate + EPP support is broken on asus ga403ui and ga403uv bios v306:
     # https://bugzilla.kernel.org/show_bug.cgi?id=218686
     # https://discord.com/channels/725125934759411753/1265111375903195249
-    # nixos-hardware.nixosModules.common-cpu-amd-pstate
+    # https://discord.com/channels/725125934759411753/1243445464184131596
+    # Maybe fixed in https://github.com/flukejones/linux/commit/b2273e19c6a6788c6fc7ba7c4d22d72f1c1004c8
+    nixos-hardware.nixosModules.common-cpu-amd-pstate
     nixos-hardware.nixosModules.common-gpu-amd
-    nixos-hardware.nixosModules.common-gpu-nvidia
+
+    # nvidia-x11-575.51.02-6.15 fails to build with nixos linux-6.15 as of 2025-06-01
+    # https://discourse.nixos.org/t/cannot-build-nvidia-x11-570-153-02-6-15/64898
+    # nixos-hardware.nixosModules.common-gpu-nvidia
+
     nixos-hardware.nixosModules.common-pc-laptop
-    nixos-hardware.nixosModules.common-pc-laptop-acpi_call
+    # common-pc-laptop-acpi_call has been removed because it is obsolete: https://github.com/NixOS/nixos-hardware/issues/1114
+    # nixos-hardware.nixosModules.common-pc-laptop-acpi_call
     nixos-hardware.nixosModules.common-pc-laptop-ssd
     nixos-hardware.nixosModules.common-pc-ssd
     nixos-hardware.nixosModules.common-hidpi

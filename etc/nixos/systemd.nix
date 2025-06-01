@@ -31,4 +31,9 @@
     };
 
   };
+
+  systemd.tmpfiles.rules = [
+    # https://nixos.wiki/wiki/AMD_GPU#HIP
+    "L+    /opt/rocm/hip   -    -    -     -    ${pkgs.rocmPackages.clr}"
+  ];
 }

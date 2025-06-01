@@ -3,9 +3,17 @@
 {
   # Open ports in the firewall.
   # networking.firewall.allowedTCPPorts = [ ... ];
-  # networking.firewall.allowedUDPPorts = [ ... ];
-  # Or disable the firewall altogether.
-  # networking.firewall.enable = false;
+  networking.firewall = {
+    enable = false;
+    # 51820 UDP for WireGuard
+    # https://nixos.wiki/wiki/WireGuard
+    # more ports for DLNA:
+    # https://github.com/NixOS/nixpkgs/blob/a0d6390cb3e82062a35d0288979c45756e481f60/nixos/modules/services/networking/minidlna.nix
+    # https://github.com/NixOS/nixpkgs/blob/a0d6390cb3e82062a35d0288979c45756e481f60/nixos/modules/services/networking/avahi-daemon.nix
+    # 49152 for gerbera
+    allowedUDPPorts = [ 49152 51820 ];
+    allowedTCPPorts = [ 49152 51820 ];
+  };
 
   networking.hostName = "nixos"; # Define your hostname.
 

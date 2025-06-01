@@ -114,6 +114,11 @@ in
 
   console.keyMap = "jp106";
 
+  nix.settings = {
+    substituters = [ "https://cosmic.cachix.org/" ];
+    trusted-public-keys = [ "cosmic.cachix.org-1:Dya9IyXD4xdBehWjrkPv6rtxpmMdRel02smYzA85dPE=" ];
+  };
+
   nixpkgs.config.allowUnfree = true;
 
   # NixOS service definitions reference packages from nixpkgs.
@@ -159,4 +164,16 @@ in
   time.timeZone = "Europe/London";
 
   # virtualisation.waydroid.enable = true;
+  virtualisation.containers.enable = true;
+  virtualisation = {
+    podman = {
+      enable = true;
+
+      # Create a `docker` alias for podman, to use it as a drop-in replacement
+      dockerCompat = true;
+
+      # Required for containers under podman-compose to be able to talk to each other.
+      defaultNetwork.settings.dns_enabled = true;
+    };
+  };
 }

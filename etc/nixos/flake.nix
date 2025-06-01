@@ -7,6 +7,7 @@
     # nixpkgs.url = "github:NixOS/nixpkgs/nixos-24.05";
     # nixpkgs.url = "github:NixOS/nixpkgs/nixos-unstable";
     # nixpkgs.url = "github:NixOS/dsilva/nixos-unstable";
+    nixpkgs.follows = "nixos-cosmic/nixpkgs";
 
     # Importing the nixpkgs module from the howdy branch like this doesn't work:
     #   imports = [
@@ -27,12 +28,14 @@
     #   git mergetool
     #   git merge --continue
     # Then use the local git branch dsilva-nixos-unstable-howdy
-    nixpkgs.url = "git+file:///home/daniel/src/nixpkgs?ref=dsilva-nixos-unstable-howdy";
+    # nixpkgs.url = "git+file:///home/daniel/src/nixpkgs?ref=dsilva-nixos-unstable-howdy";
 
-    nixpkgs-howdy.url = "github:NixOS/nixpkgs/39edb2550421f88ff2a5c330c3471a2a9c596f91";
+    # nixpkgs-howdy.url = "github:NixOS/nixpkgs/39edb2550421f88ff2a5c330c3471a2a9c596f91";
     nixpkgs-unstable.url = "github:NixOS/nixpkgs/nixos-unstable";
+
+    nixos-cosmic.url = "github:lilyinstarlight/nixos-cosmic";
   };
-  outputs = { self, nixos-hardware, nixpkgs, nixpkgs-howdy, nixpkgs-unstable }@inputs: {
+  outputs = { self, nixos-hardware, nixpkgs, nixpkgs-unstable, nixos-cosmic }@inputs: {
     # "nixos" is the hostname 
     nixosConfigurations.nixos = nixpkgs.lib.nixosSystem {
       system = "x86_64-linux";
@@ -46,6 +49,7 @@
       modules = [
         ./configuration.nix
         # chaotic.nixosModules.default
+        nixos-cosmic.nixosModules.default
       ];
     };
   };
