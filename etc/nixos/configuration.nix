@@ -71,29 +71,6 @@
 
 { config, inputs, pkgs, pkgs-unstable, ... }:
 
-let
-  overlay = final: prev: {
-    # https://github.com/NixOS/nixpkgs/issues/316538#issuecomment-2143736105
-    asusctl = pkgs-unstable.asusctl;
-    supergfxctl = pkgs-unstable.supergfxctl;
-
-    gnome = prev.gnome // {
-      gnome-shell = prev.gnome.gnome-shell.overrideAttrs (finalAttrs: prevAttrs: {
-        # gnome reserves 3-finger gestures for itself, which doesn't let us set up 3-finger drag.
-        # Change gnome's gestures to use 4 fingers.
-        # https://gitlab.gnome.org/GNOME/gnome-shell/-/blob/46.4/js/ui/swipeTracker.js?ref_type=tags
-        # https://github.com/iberianpig/fusuma/issues/173#issuecomment-2095292326
-        postPatch = ''
-          ${prevAttrs.postPatch}
-          
-          substituteInPlace js/ui/swipeTracker.js \
-            --replace-fail "const GESTURE_FINGER_COUNT = 3;" "const GESTURE_FINGER_COUNT = 4;"
-        '';
-      });
-    };
-  };
-
-in
 {
   imports = [
     ./asus/zephyrus/ga403/default.nix
@@ -113,22 +90,6 @@ in
   ];
 
   console.keyMap = "jp106";
-
-  nix.settings = {
-    substituters = [ "https://cosmic.cachix.org/" ];
-    trusted-public-keys = [ "cosmic.cachix.org-1:Dya9IyXD4xdBehWjrkPv6rtxpmMdRel02smYzA85dPE=" ];
-  };
-
-  nixpkgs.config.allowUnfree = true;
-
-  # NixOS service definitions reference packages from nixpkgs.
-  # Sometimes they let you override packages, but not always.
-  # To use a different version of a package and make sure that
-  # services pick up that version, add it to nixpkgs overlays.
-  #
-  # https://www.reddit.com/r/NixOS/comments/1cgiywn/comment/l1yf3d6/
-  # https://discordapp.com/channels/725125934759411753/770379483353055264/1226274730353496108
-  nixpkgs.overlays = [ overlay ];
 
   powerManagement = {
     enable = true;

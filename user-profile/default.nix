@@ -19,7 +19,11 @@ buildEnv {
     gnome-terminal
     htop
     nil
-    nix # If not on NixOS, this is important!
+
+    # If not on NixOS, this is important!
+    # But on NixOS, use the system package
+    # nix
+
     nixd
     nixpkgs-fmt
     # TODO: check that vp9 hardware decoding works with firefox

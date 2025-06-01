@@ -1,5 +1,8 @@
 {
   inputs = {
+    # https://docs.determinate.systems/guides/advanced-installation/#nixos
+    determinate.url = "https://flakehub.com/f/DeterminateSystems/determinate/*";
+
     # https://www.reddit.com/r/NixOS/comments/18d3ftz/comment/kcewc4b/
     #chaotic.url = "github:chaotic-cx/nyx/nyxpkgs-unstable";
     #chaotic.inputs.nixpkgs.follows = "nixpkgs";
@@ -35,7 +38,7 @@
 
     nixos-cosmic.url = "github:lilyinstarlight/nixos-cosmic";
   };
-  outputs = { self, nixos-hardware, nixpkgs, nixpkgs-unstable, nixos-cosmic }@inputs: {
+  outputs = { self, determinate, nixos-hardware, nixpkgs, nixpkgs-unstable, nixos-cosmic }@inputs: {
     # "nixos" is the hostname 
     nixosConfigurations.nixos = nixpkgs.lib.nixosSystem {
       system = "x86_64-linux";
@@ -49,6 +52,7 @@
       modules = [
         ./configuration.nix
         # chaotic.nixosModules.default
+        determinate.nixosModules.default
         nixos-cosmic.nixosModules.default
       ];
     };
