@@ -8,9 +8,9 @@
     #chaotic.inputs.nixpkgs.follows = "nixpkgs";
     nixos-hardware.url = "github:NixOS/nixos-hardware/master";
     # nixpkgs.url = "github:NixOS/nixpkgs/nixos-24.05";
-    # nixpkgs.url = "github:NixOS/nixpkgs/nixos-unstable";
+    nixpkgs.url = "github:NixOS/nixpkgs/nixos-unstable";
     # nixpkgs.url = "github:NixOS/dsilva/nixos-unstable";
-    nixpkgs.follows = "nixos-cosmic/nixpkgs";
+    #nixpkgs.follows = "nixos-cosmic/nixpkgs";
 
     # Importing the nixpkgs module from the howdy branch like this doesn't work:
     #   imports = [
@@ -53,7 +53,15 @@
         ./configuration.nix
         # chaotic.nixosModules.default
         determinate.nixosModules.default
-        nixos-cosmic.nixosModules.default
+        #nixos-cosmic.nixosModules.default
+#({ pkgs, ... }: {
+#        nixpkgs.overlays = [
+#          (final: prev: {
+#            # Use the input directly to avoid infinite recursion
+#            linuxPackages_unstable = nixpkgs-unstable.legacyPackages.x86_64-linux.linuxPackages_latest;
+#          })
+#        ];
+#      })
       ];
     };
   };

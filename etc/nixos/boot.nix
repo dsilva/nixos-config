@@ -96,8 +96,20 @@ in
 
   # If the nvidia driver fails to build, use the default LTS kernel
   # https://discourse.nixos.org/t/cannot-build-nvidia-x11-570-153-02-6-15/64898/5
-  boot.kernelPackages = pkgs-unstable.linuxPackages_latest;
-  # boot.kernelPackages = pkgs.linuxPackages_latest;
+  #boot.kernelPackages = pkgs-unstable.linuxPackages_latest;
+  #boot.kernelPackages = pkgs.linuxPackages_unstable;
+  boot.kernelPackages = pkgs.linuxPackages_latest;
+
+  #boot.kernelPackages = pkgs.linuxPackagesFor pkgs-unstable.linux_latest;
+
+
+#boot.kernelPackages = pkgs.linuxPackagesFor (pkgs-unstable.linux_latest.overrideAttrs (old: {
+#    # This manually merges the kernel and its modules so the 
+#    # stable NixOS modules can find them in the old location.
+#    passthru = (old.passthru or {}) // {
+#      modules = pkgs-unstable.linux_latest.modules;
+#    };
+#  }));
 
   # https://github.com/NixOS/nixpkgs/blob/9f918d616c5321ad374ae6cb5ea89c9e04bf3e58/pkgs/top-level/linux-kernels.nix#L219
   # We need Linux 6.11 for asus g14 2024 GA403UI support:

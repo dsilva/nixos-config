@@ -32,7 +32,8 @@ buildEnv {
     gerbera
     (callPackage ./google-chrome-with-video-acceleration.nix { })
     icewm
-    lutris
+    #lutris
+    ollama
     # Without a keyring package, vscode will sync extensions with “weaker encryption”
     # https://discourse.nixos.org/t/vscode-not-opening-github-sign-in-to-activate-syncing/40715
     pass
@@ -42,14 +43,17 @@ buildEnv {
     screen
     starship
     steam
-    stremio
+    #stremio
     tmux
     (vscode.fhsWithPackages (ps: with ps; [ rustup zlib openssl.dev pkg-config ]))
     vim
     # Somehow this builds from source when nixpkgs points to nixpkgs-unstable
     # wezterm
-    whatsapp-for-linux
-    wineWowPackages.stable
+    
+    # whatsapp-for-linux
+    wasistlos
+
+    wineWow64Packages.stable
     # Required for vscode links and synching
     # https://discourse.nixos.org/t/vscode-not-opening-github-sign-in-to-activate-syncing/40715
     xdg-utils

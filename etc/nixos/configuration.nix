@@ -137,4 +137,9 @@
       defaultNetwork.settings.dns_enabled = true;
     };
   };
+  # Enable nvidia gpu acceleration in docker containers:
+  # https://www.reddit.com/r/NixOS/comments/17p7f15/comment/k85eed9/?utm_source=share&utm_medium=web3x&utm_name=web3xcss&utm_term=1&utm_content=share_button
+  # nixpkgs.config.cudaSupport = true;
+  # virtualisation.docker.enableNvidia = true;
+  # virtualisation.docker.extraOptions = "--add-runtime nvidia=/run/current-system/sw/bin/nvidia-container-runtime";
 }

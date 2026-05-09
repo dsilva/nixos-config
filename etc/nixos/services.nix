@@ -12,7 +12,9 @@
   # Issues: https://gitlab.com/asus-linux/asusctl/-/issues
   services.asusd = {
     enable = true;
-    enableUserService = true;
+    # removed in https://github.com/NixOS/nixpkgs/pull/494028
+    # enableUserService = true;
+
     # fanCurvesConfig = builtins.readFile ../config/fan_curves.ron;
 
     # https://github.com/NixOS/nixpkgs/issues/316538#issuecomment-2143736105
@@ -74,6 +76,12 @@
       tapping = true;
     };
   };
+
+ # renamed: services.avahi.nssmdns = false;
+ services.avahi.nssmdns4 = false;
+  # services.nscd.enable = false;
+
+  services.resolved.enable = true;
 
   services.openssh = {
     enable = false;

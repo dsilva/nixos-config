@@ -5,6 +5,8 @@ let
     asusctl = pkgs-unstable.asusctl;
     supergfxctl = pkgs-unstable.supergfxctl;
 
+   # linuxPackages-unstable = pkgs-unstable.linuxPackages_latest;
+
     gnome = prev.gnome // {
       gnome-shell = prev.gnome.gnome-shell.overrideAttrs (finalAttrs: prevAttrs: {
         # gnome reserves 3-finger gestures for itself, which doesn't let us set up 3-finger drag.
@@ -24,7 +26,10 @@ let
 in
 
 {
-  #nix.gc.automatic = true;
+  # https://discourse.nixos.org/t/no-space-left-on-boot/24019/21
+  nix.gc.automatic = true;
+  nix.gc.randomizedDelaySec = "14m";
+  nix.gc.options = "--delete-older-than 10d";
 
   # Is this already the default as of NixOS 24.05?
   # nix.nixPath = [ "nixpkgs=flake:nixpkgs" "/nix/var/nix/profiles/per-user/root/channels" ];

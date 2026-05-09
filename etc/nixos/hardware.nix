@@ -29,7 +29,8 @@
 
       # Is vdpau only for nvidia?
       # https://www.reddit.com/r/archlinux/comments/1d5rsni/comment/l71is7q/
-      vaapiVdpau
+      #vaapiVdpau
+      libva-vdpau-driver
       libvdpau-va-gl
     ];
     extraPackages32 = with pkgs; [

@@ -1,0 +1,28 @@
+
+add_newline = false
+
+command_timeout = 100
+
+format = '''
+$directory$git_branch$nix_shell$python$sudo$cmd_duration$fill
+$battery$character'''
+
+[aws]
+disabled = true
+
+[fill]
+disabled = false
+# unicode U+2500
+# https://en.wikipedia.org/wiki/Box_Drawing
+symbol = '─'
+style = '#800000'
+
+[nix_shell]
+format = 'via [${symbol}nix]($style)'
+heuristic = true
+
+
+[shlvl]
+# issue 2407
+disabled = true
+threshold = 2
