@@ -36,9 +36,9 @@
     # nixpkgs-howdy.url = "github:NixOS/nixpkgs/39edb2550421f88ff2a5c330c3471a2a9c596f91";
     nixpkgs-unstable.url = "github:NixOS/nixpkgs/nixos-unstable";
 
-    nixos-cosmic.url = "github:lilyinstarlight/nixos-cosmic";
+    # nixos-cosmic.url = "github:lilyinstarlight/nixos-cosmic";
   };
-  outputs = { self, determinate, nixos-hardware, nixpkgs, nixpkgs-unstable, nixos-cosmic }@inputs: {
+  outputs = { self, determinate, nixos-hardware, nixpkgs, nixpkgs-unstable /* , nixos-cosmic */ }@inputs: {
     # "nixos" is the hostname 
     nixosConfigurations.nixos = nixpkgs.lib.nixosSystem {
       system = "x86_64-linux";

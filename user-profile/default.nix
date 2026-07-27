@@ -15,6 +15,11 @@ buildEnv {
     curl
     discord
     element-desktop
+
+    # intellij idea needs libe2p.so
+    e2fsprogs
+    e2fsprogs.out
+
     gitFull
     gnome-terminal
     htop
@@ -26,6 +31,7 @@ buildEnv {
 
     nixd
     nixpkgs-fmt
+    file
     # TODO: check that vp9 hardware decoding works with firefox
     #       https://www.reddit.com/r/firefox/comments/1ccot5c/hw_acceleration_of_vp9_decoding_on_linux_not/
     firefox
@@ -33,6 +39,10 @@ buildEnv {
     (callPackage ./google-chrome-with-video-acceleration.nix { })
     icewm
     #lutris
+
+    # intellij idea needs libnss3.so
+    nss
+
     ollama
     # Without a keyring package, vscode will sync extensions with “weaker encryption”
     # https://discourse.nixos.org/t/vscode-not-opening-github-sign-in-to-activate-syncing/40715
@@ -51,8 +61,10 @@ buildEnv {
     # wezterm
     
     # whatsapp-for-linux
-    wasistlos
+    # karere
+    #wasistlos
 
+    unzip
     wineWow64Packages.stable
     # Required for vscode links and synching
     # https://discourse.nixos.org/t/vscode-not-opening-github-sign-in-to-activate-syncing/40715

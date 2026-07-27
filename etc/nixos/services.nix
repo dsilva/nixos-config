@@ -34,11 +34,12 @@
       # https://www.reddit.com/r/NixOS/comments/1ckpcji/comment/l2swmqz/
       # https://www.phoronix.com/news/GNOME-XWayland-Frac-Scaling
       # https://github.com/GNOME/mutter/blob/e3891781804dfda1896f9e286bc0f1a55ef39d63/data/org.gnome.mutter.gschema.xml.in#L117-L137
-      extraGSettingsOverridePackages = [ pkgs.mutter ];
-      extraGSettingsOverrides = ''
-        [org.gnome.mutter]
-        experimental-features=['variable-refresh-rate', 'scale-monitor-framebuffer']
-      '';
+      # Commenting out because in GNOME 50+, VRR is no longer experimental.
+      #extraGSettingsOverridePackages = [ pkgs.mutter ];
+      #extraGSettingsOverrides = ''
+      #  [org.gnome.mutter]
+      #  experimental-features=['variable-refresh-rate', 'scale-monitor-framebuffer']
+      #'';
     };
 
   services.desktopManager.plasma6 = {
@@ -51,7 +52,8 @@
 
   services.displayManager.gdm = {
       enable = true;
-      wayland = true;
+      # option is gone and always true now:
+      # wayland = true;
     };
 
   services.flatpak.enable = true;
